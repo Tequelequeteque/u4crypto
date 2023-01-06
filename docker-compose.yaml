@@ -1,0 +1,56 @@
+version: '3'
+
+networks:
+  default:
+
+services:
+  app:
+    container_name: app
+    working_dir: /app
+    build: .
+    env_file: .env
+    volumes:
+      - ./:/app
+    networks:
+      - default
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:alpine
+    container_name: db
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - default
+    ports:
+      - ${DB_PORT}:5432
+
+  test:
+    image: postgres:alpine
+    container_name: test
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - default
+
+  run-tests:
+    container_name: run-tests
+    working_dir: /app
+    build: .
+    env_file: .env
+    command: sh -c "npm install && dockerize -wait tcp://test:5432 -timeout 60s npm run test"
+    volumes:
+      - ./:/app
+    networks:
+      - default
+    depends_on:
+      - test

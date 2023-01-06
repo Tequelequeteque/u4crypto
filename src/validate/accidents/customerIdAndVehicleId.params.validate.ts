@@ -1,0 +1,9 @@
+import Joi from "joi";
+
+export const customerIdAndVehicleIdParamsValidate = Joi.object({
+    customerId: Joi.string().uuid().required(),
+    vehicleId: Joi.string().uuid().required(),
+}).options({
+    abortEarly: false,
+    stripUnknown: true
+})
